@@ -63,7 +63,7 @@ function realizarSolicitud(mensaje, callback) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': 'psvardT7iO02ZXzlqNeyWOK2xfwcOxlh',
+      'X-API-KEY': 'VVVAAACCCIIIAAA',
     },
   };
 
