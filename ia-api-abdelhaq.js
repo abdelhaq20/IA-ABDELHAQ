@@ -37,7 +37,37 @@ app.post("/api/enviar-mensaje", (req, res) => {
     res.status(200).json(mensajeRecibido);
 
     // Guardar la conversación en un archivo de texto
-    guardarConversacion(mensajeEnviado, mensajeRecibido.content);
+    guardarTexto(mensajeEnviado, mensajeRecibido.content);
+  });
+});
+
+// Ruta para resumir un texto largo por partes
+app.post("/api/resumir", (req, res) => {
+  const textoLargo = req.body.mensaje;
+
+  // Realizar solicitud inicial antes de dividir el texto en partes
+  realizarSolicitudInicial("Iniciando resumen de texto largo.", () => {
+    const partesTexto = dividirTextoEnPartes(textoLargo);
+
+    // Resumir cada parte del texto por separado
+    const resumenes = partesTexto.map((parte) => {
+      return new Promise((resolve) => {
+        realizarSolicitud(parte, (resumen) => {
+          resolve(resumen.content);
+        });
+      });
+    });
+
+    // Combinar todos los resúmenes en un solo resumen completo
+    Promise.all(resumenes)
+      .then((resumenesCompletos) => {
+        const resumenCompleto = resumenesCompletos.join('\n');
+        res.status(200).json({ resumen: resumenCompleto });
+      })
+      .catch((error) => {
+        console.error('Error al resumir el texto:', error);
+        res.status(500).json({ error: 'Error al resumir el texto' });
+      });
   });
 });
 
@@ -47,7 +77,7 @@ function realizarSolicitud(mensaje, callback) {
     'https://ia-kong-dev.codingbuddy-4282826dce7d155229a320302e775459-0000.eu-de.containers.appdomain.cloud/api/llm/any-client';
   const requestData = {
     model: 'meta-llama/llama-2-70b-chat',
-    uuid: '32rasdf3io2hop',
+    uuid: '32rasdf3io2hopp',
     message: {
       role: 'user',
       content: mensaje,
@@ -63,7 +93,7 @@ function realizarSolicitud(mensaje, callback) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-API-KEY': 'VVVAAACCCIIIAAA',
+      'X-API-KEY': 'VVAACCIIAA',
     },
   };
 
@@ -101,11 +131,30 @@ function realizarSolicitud(mensaje, callback) {
   req.end();
 }
 
-// Función para guardar la conversación en un archivo de texto
-function guardarConversacion(mensajeEnviado, mensajeRecibido) {
-  const conversacion = `Enviado: ${mensajeEnviado}\nRecibido: ${mensajeRecibido}\n============================================\n`;
+// Función para realizar la solicitud inicial a la API externa
+function realizarSolicitudInicial(mensaje, callback) {
+  realizarSolicitud(mensaje, callback);
+}
 
-  fs.appendFile('conversacion.txt', conversacion, (err) => {
+// Función para dividir un texto largo en partes
+function dividirTextoEnPartes(texto) {
+  const MAX_CARACTERES_POR_PARTE = 1000; // Número máximo de caracteres por parte
+  const partes = [];
+  let inicio = 0;
+
+  while (inicio < texto.length) {
+    partes.push(texto.substr(inicio, MAX_CARACTERES_POR_PARTE));
+    inicio += MAX_CARACTERES_POR_PARTE;
+  }
+
+  return partes;
+}
+
+// Función para guardar la conversación en un archivo de texto
+function guardarTexto(mensajeEnviado, mensajeRecibido) {
+  const texto = `Enviado: ${mensajeEnviado}\nRecibido: ${mensajeRecibido}\n============================================\n`;
+
+  fs.appendFile('texto.txt', texto, (err) => {
     if (err) {
       console.error('Error al guardar la conversación:', err);
     } else {
