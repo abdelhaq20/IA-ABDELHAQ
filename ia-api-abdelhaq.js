@@ -54,6 +54,7 @@ app.post("/api/resumir", (req, res) => {
       return new Promise((resolve) => {
         realizarSolicitud(parte, (resumen) => {
           resolve(resumen.content);
+          guardarTexto(parte, resumen.content);
         });
       });
     });
@@ -69,6 +70,8 @@ app.post("/api/resumir", (req, res) => {
         res.status(500).json({ error: 'Error al resumir el texto' });
       });
   });
+
+
 });
 
 // Función para realizar la solicitud a la API externa
